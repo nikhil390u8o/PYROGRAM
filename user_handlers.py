@@ -1,4 +1,6 @@
 from pyrogram import filters
+from pytgcalls import PyTgCalls
+
 from user.sg import sg_handle, adsg_handle
 from user.fuck import fuck_handle
 from user.hack import hack_handle
@@ -17,12 +19,22 @@ from user.dino import dino_anim
 
 
 def register_user(client):
+
+  # 🔊 Start Voice Chat Engine
+  try:
+    client.call_py = PyTgCalls(client)
+    client.loop.create_task(client.call_py.start())
+    print("Voice chat engine started")
+  except Exception as e:
+    print(f"VC engine error: {e}")
+
+
   @client.on_message(filters.outgoing & filters.regex(r'^//lover(?:\s|$)'))
-  async def handle_spam(client, message):
+  async def handle_lover(client, message):
     await lover_handle(client, message)
     
   @client.on_message(filters.outgoing & filters.regex(r'^//dino(?:\s|$)'))
-  async def handle_spam(client, message):
+  async def handle_dino(client, message):
     await dino_anim(client, message)
     
   @client.on_message(filters.outgoing & filters.regex(r'^//spam(?:\s|$)'))
@@ -30,7 +42,7 @@ def register_user(client):
     await spam_handle(client, message)
     
   @client.on_message(filters.outgoing & filters.regex(r'^//loveyou(?:\s|$)'))
-  async def handle_lover(client, message):
+  async def handle_loveyou(client, message):
     await loveyou_handle(client, message)
   
   @client.on_message(filters.outgoing & filters.regex(r'^//love(?:\s|$)'))
@@ -88,8 +100,36 @@ def register_user(client):
   @client.on_message(filters.outgoing & filters.regex(r'^//sg(?:\s|$)'))
   async def handle_sg(client, message):
     await sg_handle(client, message)
-    
+
+
+  # 🔊 JOIN VC
+  @client.on_message(filters.outgoing & filters.regex(r'^//join(?:\s|$)'))
+  async def join_vc(client, message):
+    try:
+      from pytgcalls.types.input_stream import AudioPiped
+
+      await client.call_py.join_group_call(
+        message.chat.id,
+        AudioPiped("song.mp3")
+      )
+
+      await message.reply("Joined Voice Chat 🔊")
+
+    except Exception as e:
+      await message.reply(f"VC Join Error: {e}")
+
+
+  # 🔊 LEAVE VC
+  @client.on_message(filters.outgoing & filters.regex(r'^//leave(?:\s|$)'))
+  async def leave_vc(client, message):
+    try:
+      await client.call_py.leave_group_call(message.chat.id)
+      await message.reply("Left Voice Chat")
+
+    except Exception as e:
+      await message.reply(f"VC Leave Error: {e}")
+
+
   @client.on_message(filters.incoming | filters.outgoing)
   async def handle_all_messages(client, message):
     await adsg_handle(client, message)
-    
