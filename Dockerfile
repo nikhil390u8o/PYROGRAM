@@ -26,7 +26,9 @@ COPY . /app/
 WORKDIR /app/
 
 # Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip uninstall pytgcalls py-tgcalls-wrapper -y || true
+RUN pip install --no-cache-dir pytgcalls==2.1.0
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Start the bot
 CMD ["python", "main.py"]
